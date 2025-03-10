@@ -1,0 +1,52 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
+// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
+
+
+
+// prisma/schema.prisma
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+
+model Admin {
+  id         Int      @id @default(autoincrement())
+  email      String   @unique
+  password   String
+  otp       String? 
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+}
+model Employee {
+  id         Int      @id @default(autoincrement())
+  name       String
+  email      String   @unique
+  autoId     String   @unique           // Auto-generated login ID for employees
+  payrolls   Payroll[]                // One-to-many relationship to Payroll
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+}
+
+model Payroll {
+  id           Int      @id @default(autoincrement())
+  employeeId   Int
+  employee     Employee @relation(fields: [employeeId], references: [id]) // Many-to-one relationship with Employee
+  grossPay     Float
+  tax          Float
+  pension      Float
+  nhis         Float
+  commission   Float?   // Optional commission field if applicable
+  netPay       Float    // Calculated as: grossPay - (tax + pension + nhis) + commission (if any)
+  payslip      String?  // Detailed breakdown stored as JSON or formatted text
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+}
