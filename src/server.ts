@@ -2,9 +2,6 @@ import { prisma } from './prisma/client'; // Import Prisma client
 import express, { Request, Response, NextFunction } from 'express';
 import bodyParser from 'body-parser';
 import cors from 'cors';
-
-
-
 import { json, urlencoded } from 'body-parser';
 import { errorHandler } from './middlewares/errorHandler';
 import authRoutes from './routes/auth.routes';
@@ -17,11 +14,25 @@ const app = express();
 const port = process.env.PORT || 3001;
 
 // Middlewares
+
 app.use(json());
 app.use(urlencoded({ extended: true }));
+
+
+app.use(
+  cors({
+    origin: "*", // Allows all origins
+    methods: 'GET, POST, PUT, DELETE, OPTIONS',
+    allowedHeaders: 'Content-Type, Authorization',
+    credentials: true, // Allow cookies and authorization headers
+  })
+);
+
+app.options('*', cors()); // Handle preflight requests for all routes
+
 app.use('/api/auth', authRoutes);
 // app.use('/', demoroutes);
-app.use(cors());
+
 
 
 // Routes (to be added later)
