@@ -5,5 +5,6 @@ export interface IDemoRequest {
     companyName: string;
     phoneNumber: string;
     companyRole: string;
+    preferedContactType: boolean;
   }
   
