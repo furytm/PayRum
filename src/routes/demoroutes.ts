@@ -1,8 +1,8 @@
-// import { Router } from 'express';
-// import { requestDemo } from '../controllers/demoRequest';
+import { Router } from 'express';
+import { createRequestDemo } from '../controllers/demoRequest';
 
-// const router = Router();
+const router = Router();
 
-// router.post('/request-demo', requestDemo);
+router.post('/request-demo', createRequestDemo);
 
-// export default router;
+export default router;

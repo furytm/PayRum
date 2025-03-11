@@ -5,7 +5,7 @@ import cors from 'cors';
 import { json, urlencoded } from 'body-parser';
 import { errorHandler } from './middlewares/errorHandler';
 import authRoutes from './routes/auth.routes';
-// import demoroutes from './routes/demoroutes'
+import demoroutes from './routes/demoroutes'
 
 
 
@@ -31,7 +31,7 @@ app.use(
 app.options('*', cors()); // Handle preflight requests for all routes
 
 app.use('/api/auth', authRoutes);
-// app.use('/', demoroutes);
+app.use('/', demoroutes);
 
 
 
