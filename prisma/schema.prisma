@@ -50,3 +50,14 @@ model Payroll {
   createdAt    DateTime @default(now())
   updatedAt    DateTime @updatedAt
 }
+model DemoRequest {
+  id           Int      @id @default(autoincrement())
+  firstName    String
+  lastName     String
+  workEmail    String   // Work email of the person requesting a demo
+  companyName  String
+  phoneNumber  String
+  companyRole  String
+  createdAt    DateTime @default(now())
+}
+

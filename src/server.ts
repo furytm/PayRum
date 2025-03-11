@@ -1,9 +1,15 @@
 import { prisma } from './prisma/client'; // Import Prisma client
 import express, { Request, Response, NextFunction } from 'express';
 import bodyParser from 'body-parser';
+import cors from 'cors';
+
+
+
 import { json, urlencoded } from 'body-parser';
 import { errorHandler } from './middlewares/errorHandler';
 import authRoutes from './routes/auth.routes';
+// import demoroutes from './routes/demoroutes'
+
 
 
 
@@ -14,6 +20,10 @@ const port = process.env.PORT || 3001;
 app.use(json());
 app.use(urlencoded({ extended: true }));
 app.use('/api/auth', authRoutes);
+// app.use('/', demoroutes);
+app.use(cors());
+
+
 // Routes (to be added later)
 app.get('/', (req, res) => {
   res.send('Payroll System API');
