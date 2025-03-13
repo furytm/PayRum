@@ -17,8 +17,14 @@ export const createRequestDemo = async (req: Request, res: Response, next: NextF
     // Validate required fields
     if (!firstName || !lastName || !workEmail || !companyName || !phoneNumber || !companyRole || !employeeHeadcount) {
       res.status(400).json({ message: 'All fields are required' });
+      return;
     }
-
+  // Convert employeeHeadcount to an integer
+  const headcount = parseInt(employeeHeadcount, 10);
+  if (isNaN(headcount)) {
+    res.status(400).json({ message: 'Invalid employeeHeadcount. Must be a number.' });
+    return;
+  }
     // Convert preferredContact to boolean (true = phone, false = email)
     const isPhonePreferred = preferredContact === 'phone';
 
