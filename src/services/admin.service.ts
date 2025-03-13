@@ -43,7 +43,7 @@ export const signup = async (email: string, password: string): Promise<string> =
     }
   
     // Compare OTP received with the one stored in the database
-    if (otp !== admin.otp) {
+    if (!otp || otp !== admin.otp) {
       throw new Error('Invalid OTP');
     }
   
