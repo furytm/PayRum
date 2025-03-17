@@ -18,7 +18,7 @@ export const createRequestDemo = async (req: Request, res: Response, next: NextF
     if (!firstName || !lastName || !workEmail || !companyName || !phoneNumber || !companyRole || !employeeHeadcount) {
       res.status(400).json({ message: 'All fields are required' });
     }
-
+    
     // Convert preferredContact to boolean (true = phone, false = email)
     const isPhonePreferred = preferredContact === 'phone';
 

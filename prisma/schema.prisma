@@ -27,13 +27,19 @@ model Admin {
   updatedAt  DateTime @updatedAt
 }
 model Employee {
-  id         Int      @id @default(autoincrement())
-  name       String
-  email      String   @unique
-  autoId     String   @unique           // Auto-generated login ID for employees
-  payrolls   Payroll[]                // One-to-many relationship to Payroll
-  createdAt  DateTime @default(now())
-  updatedAt  DateTime @updatedAt
+  id             Int      @id @default(autoincrement())
+  fullName       String
+  email          String   @unique
+  accountNumber  String
+  payPeriod      String
+  department     String
+  employmentType String
+  jobTitle       String
+  bankName       String
+  autoId         String   @unique  // Auto-generated login ID for employees
+  payrolls       Payroll[]             // One-to-many relationship to Payroll
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
 }
 
 model Payroll {
