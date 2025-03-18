@@ -2,11 +2,25 @@ import { prisma } from '../prisma/client';
 import { v4 as uuidv4 } from 'uuid';
 
 interface EmployeeInput {
-  name: string;
+  fullName: string;
   email: string;
+  accountNumber: string;
+  payPeriod: string;
+  department: string;
+  employmentType: string;
+  jobTitle: string;
+  bankName: string;
 }
 
-export const createEmployee = async ({ name, email }: EmployeeInput) => {
+export const createEmployee = async ({ fullName,
+   email,
+   accountNumber,
+  payPeriod,
+  department,
+  employmentType,
+  jobTitle,
+  bankName,
+ }: EmployeeInput) => {
   // Check if an employee with the same email already exists
   const existingEmployee = await prisma.employee.findUnique({
     where: { email },
@@ -21,8 +35,14 @@ export const createEmployee = async ({ name, email }: EmployeeInput) => {
   // Create the employee record in the database
   const newEmployee = await prisma.employee.create({
     data: {
-      name,
+      fullName,
       email,
+      accountNumber,
+      payPeriod,
+      department,
+      employmentType,
+      jobTitle,
+      bankName,
       autoId,
     },
   });
