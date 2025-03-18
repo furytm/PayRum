@@ -5,7 +5,7 @@ interface EmployeeInput {
   fullName: string;
   email: string;
   accountNumber: string;
-  payPeriod: string;
+  HireDate: string;
   department: string;
   employmentType: string;
   jobTitle: string;
@@ -15,7 +15,7 @@ interface EmployeeInput {
 export const createEmployee = async ({ fullName,
    email,
    accountNumber,
-  payPeriod,
+   HireDate ,
   department,
   employmentType,
   jobTitle,
@@ -38,7 +38,7 @@ export const createEmployee = async ({ fullName,
       fullName,
       email,
       accountNumber,
-      payPeriod,
+      HireDate ,
       department,
       employmentType,
       jobTitle,

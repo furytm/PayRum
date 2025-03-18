@@ -6,7 +6,7 @@ export const createEmployeeController = async (req: Request, res: Response, next
     const { fullName,
       email,
       accountNumber,
-      payPeriod,
+      HireDate ,
       department,
       employmentType,
       jobTitle,
@@ -17,7 +17,7 @@ export const createEmployeeController = async (req: Request, res: Response, next
       !fullName ||
       !email ||
       !accountNumber ||
-      !payPeriod ||
+      !HireDate  ||
       !department ||
       !employmentType ||
       !jobTitle ||
@@ -29,7 +29,7 @@ export const createEmployeeController = async (req: Request, res: Response, next
       fullName,
       email,
       accountNumber,
-      payPeriod,
+      HireDate ,
       department,
       employmentType,
       jobTitle,
