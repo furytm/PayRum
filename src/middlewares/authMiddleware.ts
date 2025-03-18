@@ -22,3 +22,19 @@ export const verifyToken = (req: Request, res: Response, next: NextFunction):voi
     next(); // Move to the next middleware or route handler
   });
 };
+
+export const verifyAdmin = (req: Request, res: Response, next: NextFunction):void => {
+  const token = req.headers.authorization?.split(' ')[1];
+  if (!token) {
+      res.status(403).json({ success: false, message: 'Unauthorized' });
+      return;
+  }
+
+  try {
+      const decoded: any = jwt.verify(token, process.env.JWT_SECRET!);
+      req.user = decoded;
+      next();
+  } catch (error) {
+      res.status(401).json({ success: false, message: 'Invalid token' });
+  }
+};
