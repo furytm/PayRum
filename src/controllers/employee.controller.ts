@@ -1,69 +1,51 @@
-import { Request, Response, NextFunction } from 'express';
-import { createEmployee, deleteEmployee, getAllEmployees, getEmployeeById, updateEmployee } from '../services/employee.service';
+import { Request, Response, NextFunction } from "express";
+import {
+  createEmployee,
+  deleteEmployee,
+  getAllEmployees,
+  getEmployeeById,
+  updateEmployee,
+} from "../services/employee.service";
+import { EmployeeInput } from "../services/employee.service";
 
-export const createEmployeeController = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
-  try {
-    const { fullName,
+export const createEmployeeController = async (
+  req: Request<EmployeeInput[]>,
+  res: Response,
+  next: NextFunction
+): Promise<void> => {
+  const employees: EmployeeInput[] = req.body;
+  for (const employee of employees) {
+    const {
+      fullName,
       email,
       accountNumber,
-      HireDate ,
+      HireDate,
       department,
       employmentType,
       jobTitle,
-      bankName, } = req.body;
+      bankName,
+    } = employee;
 
     // Basic validation
     if (
       !fullName ||
       !email ||
       !accountNumber ||
-      !HireDate  ||
+      !HireDate ||
       !department ||
       !employmentType ||
       !jobTitle ||
-      !bankName) {
-      res.status(400).json({ message: 'All are required' });
+      !bankName
+    ) {
+      res.status(400).json({ message: "All are required" });
+      return
     }
+  }
 
-    const employee = await createEmployee({
-      fullName,
-      email,
-      accountNumber,
-      HireDate ,
-      department,
-      employmentType,
-      jobTitle,
-      bankName,
-    });
+  try {
+    const newEmployee = await createEmployee(employees);
     res.status(201).json({
-      message: 'Employee created successfully',
-      data: employee,
-    });
-  } catch (error) {
-    next(error);
-  }
-};
-
-
-export const updateEmployeeController = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
-  try {
-    const { id } = req.params;
-    const updateData = req.body;
-    const employee = await updateEmployee(Number(id), updateData);
-    res.status(200).json({
-      message: 'Employee updated successfully',
-      data: employee,
-    });
-  } catch (error) {
-    next(error);
-  }
-};
-
-export const getAllEmployeesController = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
-  try {
-    const employees = await getAllEmployees();
-    res.status(200).json({
-      message: 'Employees fetched successfully',
+      message: "Employee created successfully",
       data: employees,
     });
   } catch (error) {
@@ -71,12 +53,17 @@ export const getAllEmployeesController = async (req: Request, res: Response, nex
   }
 };
 
-export const getEmployeeByIdController = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
+export const updateEmployeeController = async (
+  req: Request,
+  res: Response,
+  next: NextFunction
+): Promise<void> => {
   try {
     const { id } = req.params;
-    const employee = await getEmployeeById(Number(id));
+    const updateData = req.body;
+    const employee = await updateEmployee(Number(id), updateData);
     res.status(200).json({
-      message: 'Employee fetched successfully',
+      message: "Employee updated successfully",
       data: employee,
     });
   } catch (error) {
@@ -84,12 +71,49 @@ export const getEmployeeByIdController = async (req: Request, res: Response, nex
   }
 };
 
-export const deleteEmployeeController = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
+export const getAllEmployeesController = async (
+  req: Request,
+  res: Response,
+  next: NextFunction
+): Promise<void> => {
+  try {
+    const employees = await getAllEmployees();
+    res.status(200).json({
+      message: "Employees fetched successfully",
+      data: employees,
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+
+export const getEmployeeByIdController = async (
+  req: Request,
+  res: Response,
+  next: NextFunction
+): Promise<void> => {
+  try {
+    const { id } = req.params;
+    const employee = await getEmployeeById(Number(id));
+    res.status(200).json({
+      message: "Employee fetched successfully",
+      data: employee,
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+
+export const deleteEmployeeController = async (
+  req: Request,
+  res: Response,
+  next: NextFunction
+): Promise<void> => {
   try {
     const { id } = req.params;
     await deleteEmployee(Number(id));
     res.status(200).json({
-      message: 'Employee deleted successfully',
+      message: "Employee deleted successfully",
     });
   } catch (error) {
     next(error);

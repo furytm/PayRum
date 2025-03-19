@@ -3,7 +3,8 @@ import {
   createPayroll,
   getPayrollById,
   getPayrollsByEmployee,
-  getAllPayrolls
+  getAllPayrolls,
+  getPayrollSummary
 } from '../services/payroll.service';
 
 export const addPayroll = async (req: Request, res: Response, next: NextFunction) => {
@@ -44,4 +45,12 @@ export const getAllPayrollRecords = async (req: Request, res: Response, next: Ne
     next(error);
   }
 };
-
+// NEW: Payroll Summary Endpoint
+export const getPayrollSummaryController = async (req: Request, res: Response, next: NextFunction) => {
+  try {
+    const summary = await getPayrollSummary();
+    res.status(200).json({ success: true, summary });
+  } catch (error: any) {
+    next(error);
+  }
+};

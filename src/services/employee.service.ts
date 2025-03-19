@@ -1,7 +1,7 @@
 import { prisma } from '../prisma/client';
 import { v4 as uuidv4 } from 'uuid';
 
-interface EmployeeInput {
+export interface EmployeeInput {
   fullName: string;
   email: string;
   accountNumber: string;
@@ -12,29 +12,25 @@ interface EmployeeInput {
   bankName: string;
 }
 
-export const createEmployee = async ({ fullName,
-   email,
-   accountNumber,
-   HireDate ,
-  department,
-  employmentType,
-  jobTitle,
-  bankName,
- }: EmployeeInput) => {
+interface EmployeesReturn extends EmployeeInput {
+  autoId: string;
+}
+
+export const createEmployee = async (employees: EmployeeInput[]) => {
   // Check if an employee with the same email already exists
-  const existingEmployee = await prisma.employee.findUnique({
-    where: { email },
-  });
-  if (existingEmployee) {
-    throw new Error('Employee with this email already exists');
+  for(const employee of employees){
+    const email = employee.email
+    const existingEmployee = await prisma.employee.findUnique({
+      where: { email },
+    });
+    if (existingEmployee) {
+      throw new Error('Employee with this email already exists');
+    }
   }
+  const newEmployees: EmployeesReturn[] = []
 
-  // Generate an autoId for employee login (using an 8-character substring of a UUID)
-  const autoId = uuidv4().slice(0, 8);
-
-  // Create the employee record in the database
-  const newEmployee = await prisma.employee.create({
-    data: {
+  for(let employee of employees){
+    const {
       fullName,
       email,
       accountNumber,
@@ -43,11 +39,29 @@ export const createEmployee = async ({ fullName,
       employmentType,
       jobTitle,
       bankName,
-      autoId,
-    },
-  });
+    } = employee
+    const autoId = uuidv4().slice(0, 8);
+  
+    // Create the employee record in the database
+    const newEmployee = await prisma.employee.create({
+      data: {
+        fullName,
+        email,
+        accountNumber,
+        HireDate ,
+        department,
+        employmentType,
+        jobTitle,
+        bankName,
+        autoId,
+      },
+    });
 
-  return newEmployee;
+    newEmployees.push(newEmployee)
+  }
+  // Generate an autoId for employee login (using an 8-character substring of a UUID)
+
+  return newEmployees;
 };
 
 

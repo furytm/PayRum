@@ -67,4 +67,38 @@ export const getAllPayrolls = async () => {
   });
   return payrolls;
 };
+type PayrollSummary = {
+  totalGross: number;
+  totalTax: number;
+  totalPension: number;
+  totalNhis: number;
+  totalCommission: number;
+  totalNet: number;
+};
+
+export const getPayrollSummary = async (): Promise<PayrollSummary> => {
+  const payrolls = await prisma.payroll.findMany();
+  
+  const summary = payrolls.reduce(
+    (acc: PayrollSummary, payroll) => {
+      acc.totalGross += payroll.grossPay;
+      acc.totalTax += payroll.tax;
+      acc.totalPension += payroll.pension;
+      acc.totalNhis += payroll.nhis;
+      acc.totalCommission += payroll.commission || 0;
+      acc.totalNet += payroll.netPay;
+      return acc;
+    },
+    {
+      totalGross: 0,
+      totalTax: 0,
+      totalPension: 0,
+      totalNhis: 0,
+      totalCommission: 0,
+      totalNet: 0,
+    } as PayrollSummary
+  );
+  
+  return summary;
+};
 
