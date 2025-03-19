@@ -8,6 +8,7 @@ import authRoutes from './routes/auth.routes';
 import demoroutes from './routes/demoroutes'
 import employeeRoutes from './routes/employee.routes';
 import payrollRoute from './routes/payroll.routes'
+import payslipRoutes from './routes/payslip.routes';
 
 
 
@@ -36,6 +37,7 @@ app.use('/api/auth', authRoutes);
 app.use('/api/demo', demoroutes);
 app.use('/api/employee', employeeRoutes);
 app.use('/api/payroll', payrollRoute)
+app.use('/api/payslip',payslipRoutes)
 
 
 
