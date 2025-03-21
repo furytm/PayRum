@@ -9,8 +9,8 @@ import {
 
 export const addPayroll = async (req: Request, res: Response, next: NextFunction) => {
   try {
-    const { employeeId, grossPay, tax, pension, nhis, commission } = req.body;
-    const payroll = await createPayroll(employeeId, grossPay, tax, pension, nhis, commission);
+    const { employeeId } = req.body;
+    const payroll = await createPayroll(employeeId);
     res.status(201).json({ success: true, payroll });
   } catch (error: any) {
     next(error);

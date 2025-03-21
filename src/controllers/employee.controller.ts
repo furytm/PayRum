@@ -21,6 +21,7 @@ const employees: EmployeeInput[] = Array.isArray(req.body) ? req.body : [req.bod
       email,
       accountNumber,
       HireDate,
+      grossPay,
       department,
       employmentType,
       jobTitle,
@@ -34,6 +35,7 @@ const employees: EmployeeInput[] = Array.isArray(req.body) ? req.body : [req.bod
       !accountNumber ||
       !HireDate ||
       !department ||
+      !grossPay ||
       !employmentType ||
       !jobTitle ||
       !bankName
@@ -48,7 +50,9 @@ const employees: EmployeeInput[] = Array.isArray(req.body) ? req.body : [req.bod
     res.status(201).json({
       message: "Employee created successfully",
       data: newEmployees,
+    
     });
+    console.log(newEmployees)
   } catch (error) {
     next(error);
   }

@@ -6,6 +6,7 @@ export interface EmployeeInput {
   email: string;
   accountNumber: string;
   HireDate: string;
+  grossPay: number;
   department: string;
   employmentType: string;
   jobTitle: string;
@@ -23,6 +24,7 @@ export const createEmployee = async (employeeData: EmployeeInput | EmployeeInput
 
   const emails = employees.map((employee) => employee.email);
 
+  // Find existing employees by email
   const existingEmployees = await prisma.employee.findMany({
     where: { email: { in: emails } },
     select: { email: true },
@@ -30,21 +32,28 @@ export const createEmployee = async (employeeData: EmployeeInput | EmployeeInput
 
   const existingEmailsSet = new Set(existingEmployees.map((e) => e.email));
 
-  const newEmployees = employees
-    .filter((employee) => !existingEmailsSet.has(employee.email))
-    .map((employee) => ({
-      ...employee,
-      autoId: uuidv4().slice(0, 8),
-    }));
+  // Filter new employees to avoid duplicates
+  const newEmployees = employees.filter(employee => !existingEmailsSet.has(employee.email));
 
   if (!newEmployees.length) {
     throw new Error("All provided employees already exist in the database.");
   }
 
-  await prisma.employee.createMany({ data: newEmployees });
+  // Insert employees one by one to return their IDs
+  const createdEmployees: EmployeesReturn[] = [];
+  for (const employee of newEmployees) {
+    const newEmployee = await prisma.employee.create({
+      data: {
+        ...employee,
+        autoId: uuidv4().slice(0, 8),
+      },
+    });
+    createdEmployees.push(newEmployee);
+  }
 
-  return newEmployees;
+  return createdEmployees;
 };
+
 
 
 

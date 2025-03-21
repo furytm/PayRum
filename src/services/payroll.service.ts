@@ -1,24 +1,34 @@
 import { prisma } from '../prisma/client';
 
-export const createPayroll = async (
-  employeeId: number,
-  grossPay: number,
-  tax: number,
-  pension: number,
-  nhis: number,
-  commission?: number
-) => {
-  // Ensure the employee exists
-  const employee = await prisma.employee.findUnique({ where: { id: employeeId } });
+export const createPayroll = async (employeeId: number) => {
+  // Ensure the employee exists and retrieve grossPay
+  const employee = await prisma.employee.findUnique({ 
+    where: { id: employeeId }, 
+    select: { grossPay: true }  // Fetch only the grossPay field
+  });
+
   if (!employee) {
     throw new Error('Employee not found');
   }
 
-  // Calculate net pay: grossPay minus deductions, plus commission if provided
-  const deductions = tax + pension + nhis;
-  const netPay = grossPay - deductions + (commission || 0);
+  const { grossPay } = employee; // Use the employee's grossPay
 
-  // Create payroll entry and store a payslip as a JSON string (for demonstration)
+  // Define deduction rates (percentages)
+  const taxRate = 10; // 10%
+  const pensionRate = 5; // 5%
+  const nhisRate = 2; // 2%
+  const commissionRate = 2; // 2%
+
+  // Calculate deductions
+  const tax = (taxRate / 100) * grossPay;
+  const pension = (pensionRate / 100) * grossPay;
+  const nhis = (nhisRate / 100) * grossPay;
+  const commission = (commissionRate / 100) * grossPay;
+
+  const deductions = tax + pension + nhis;
+  const netPay = grossPay - deductions + commission;
+
+  // Create payroll entry
   const payroll = await prisma.payroll.create({
     data: {
       employeeId,
