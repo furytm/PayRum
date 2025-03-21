@@ -36,6 +36,7 @@ export const createPayroll = async (
 };
 
 export const getPayrollById = async (id: number) => {
+  console.log("getPayrollById called with id:", id);
   const payroll = await prisma.payroll.findUnique({
     where: { id },
     include: { employee: true }, // Optionally include employee details

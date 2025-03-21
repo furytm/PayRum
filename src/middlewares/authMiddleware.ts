@@ -31,7 +31,8 @@ export const verifyAdmin = (req: Request, res: Response, next: NextFunction):voi
   }
 
   try {
-      const decoded: any = jwt.verify(token, process.env.JWT_SECRET!);
+      const decoded: any = jwt.verify
+      (token, process.env.JWT_SECRET!);
       req.user = decoded;
       next();
   } catch (error) {

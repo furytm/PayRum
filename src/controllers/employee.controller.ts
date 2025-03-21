@@ -13,7 +13,8 @@ export const createEmployeeController = async (
   res: Response,
   next: NextFunction
 ): Promise<void> => {
-  const employees: EmployeeInput[] = req.body;
+// If the request body is not an array, wrap it in an array
+const employees: EmployeeInput[] = Array.isArray(req.body) ? req.body : [req.body];
   for (const employee of employees) {
     const {
       fullName,
@@ -37,16 +38,16 @@ export const createEmployeeController = async (
       !jobTitle ||
       !bankName
     ) {
-      res.status(400).json({ message: "All are required" });
-      return
+      res.status(400).json({ message: "All fields are required" });
+      return;
     }
   }
 
   try {
-    const newEmployee = await createEmployee(employees);
+    const newEmployees = await createEmployee(employees);
     res.status(201).json({
       message: "Employee created successfully",
-      data: employees,
+      data: newEmployees,
     });
   } catch (error) {
     next(error);

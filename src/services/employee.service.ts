@@ -15,54 +15,37 @@ export interface EmployeeInput {
 interface EmployeesReturn extends EmployeeInput {
   autoId: string;
 }
+export const createEmployee = async (employeeData: EmployeeInput | EmployeeInput[]): Promise<EmployeesReturn[]> => {
+  // Ensure employeeData is always an array
+  const employees = Array.isArray(employeeData) ? employeeData : [employeeData];
 
-export const createEmployee = async (employees: EmployeeInput[]) => {
-  // Check if an employee with the same email already exists
-  for(const employee of employees){
-    const email = employee.email
-    const existingEmployee = await prisma.employee.findUnique({
-      where: { email },
-    });
-    if (existingEmployee) {
-      throw new Error('Employee with this email already exists');
-    }
+  if (!employees.length) throw new Error("No employee data provided.");
+
+  const emails = employees.map((employee) => employee.email);
+
+  const existingEmployees = await prisma.employee.findMany({
+    where: { email: { in: emails } },
+    select: { email: true },
+  });
+
+  const existingEmailsSet = new Set(existingEmployees.map((e) => e.email));
+
+  const newEmployees = employees
+    .filter((employee) => !existingEmailsSet.has(employee.email))
+    .map((employee) => ({
+      ...employee,
+      autoId: uuidv4().slice(0, 8),
+    }));
+
+  if (!newEmployees.length) {
+    throw new Error("All provided employees already exist in the database.");
   }
-  const newEmployees: EmployeesReturn[] = []
 
-  for(let employee of employees){
-    const {
-      fullName,
-      email,
-      accountNumber,
-      HireDate ,
-      department,
-      employmentType,
-      jobTitle,
-      bankName,
-    } = employee
-    const autoId = uuidv4().slice(0, 8);
-  
-    // Create the employee record in the database
-    const newEmployee = await prisma.employee.create({
-      data: {
-        fullName,
-        email,
-        accountNumber,
-        HireDate ,
-        department,
-        employmentType,
-        jobTitle,
-        bankName,
-        autoId,
-      },
-    });
-
-    newEmployees.push(newEmployee)
-  }
-  // Generate an autoId for employee login (using an 8-character substring of a UUID)
+  await prisma.employee.createMany({ data: newEmployees });
 
   return newEmployees;
 };
+
 
 
 export const updateEmployee = async (id: number, updateData: Partial<EmployeeInput>) => {

@@ -1,9 +1,12 @@
 import express from 'express';
-import { getPayslipController } from '../controllers/payslip.controller';
+import { exportPayrollsCSV, exportPayrollsPDF, getPayslipController } from '../controllers/payslip.controller';
+import { verifyAdmin } from '../middlewares/authMiddleware';
 
 
 const router = express.Router();
 
-router.get('/:payrollId/payslip', getPayslipController);
+router.get('/exportcsv', verifyAdmin, exportPayrollsCSV);
+router.get('/exportpdf', verifyAdmin, exportPayrollsPDF);
 
+router.get('/:payrollId/payslip', getPayslipController);
 export default router;
