@@ -66,7 +66,14 @@ export const getAllPayrolls = async () => {
     include: { employee: true }, // Optionally include employee details
     orderBy: { createdAt: 'desc' },
   });
-  return payrolls;
+    
+  // Map each payroll record to add a computed "deductions" field
+  const payrollsWithDeductions= payrolls.map(payroll=>({
+    ...payroll,
+    deductions:payroll.tax +payroll.pension+payroll.nhis,
+    employeeFullName: payroll.employee.fullName,
+  }));
+  return payrollsWithDeductions;
 };
 type PayrollSummary = {
   totalGross: number;
