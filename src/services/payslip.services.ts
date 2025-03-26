@@ -1,7 +1,12 @@
-import { stringify } from 'querystring';
-import { prisma } from '../prisma/client';
-import { Parser as Json2csvParser } from 'json2csv';
-import PDFDocument from 'pdfkit';
+// import PDFDocument from "pdfkit";
+const PDFDocument = require("pdfkit-table");
+
+import { prisma } from "../prisma/client";
+import { Parser as Json2csvParser } from "json2csv";
+import fs from "fs";
+import path from "path";
+// import "pdfkit-table";
+
 export const getPayslip = async (payrollId: number) => {
   // Fetch payroll details with related employee
   const payroll = await prisma.payroll.findUnique({
@@ -10,17 +15,17 @@ export const getPayslip = async (payrollId: number) => {
   });
 
   if (!payroll) {
-    throw new Error('Payroll record not found');
+    throw new Error("Payroll record not found");
   }
 
   // Format payslip response
   const payslip = {
     employee: {
-    fullName: payroll.employee.fullName,
+      fullName: payroll.employee.fullName,
       jobTitle: payroll.employee.jobTitle,
       department: payroll.employee.department,
-      bankName:payroll.employee.bankName,
-      accountNumber:payroll.employee.accountNumber
+      bankName: payroll.employee.bankName,
+      accountNumber: payroll.employee.accountNumber,
     },
     payroll: {
       grossPay: payroll.grossPay,
@@ -37,14 +42,23 @@ export const getPayslip = async (payrollId: number) => {
   return payslip;
 };
 
-
-
 export const generatePayrollsCSV = async (): Promise<string> => {
   const payrolls = await prisma.payroll.findMany({
     include: { employee: true },
-    orderBy: { createdAt: 'desc' },
+    orderBy: { createdAt: "desc" },
   });
-  const fields = ['id', 'employeeId', 'grossPay', 'tax', 'pension', 'nhis', 'commission', 'netPay', 'payslip', 'createdAt'];
+  const fields = [
+    "id",
+    "employeeId",
+    "grossPay",
+    "tax",
+    "pension",
+    "nhis",
+    "commission",
+    "netPay",
+    "payslip",
+    "createdAt",
+  ];
   const json2csvParser = new Json2csvParser({ fields });
   const csv = json2csvParser.parse(payrolls);
   return csv;
@@ -53,35 +67,67 @@ export const generatePayrollsCSV = async (): Promise<string> => {
 export const generatePayrollsPDFBuffer = async (): Promise<Buffer> => {
   const payrolls = await prisma.payroll.findMany({
     include: { employee: true },
-    orderBy: { createdAt: 'desc' },
+    orderBy: { createdAt: "desc" },
   });
 
+  // const doc = new PDFDocument({ size: "A4", margin: 50 });
   const doc = new PDFDocument();
+
   let buffers: Buffer[] = [];
-  doc.on('data', buffers.push.bind(buffers));
-  doc.on('end', () => {});
+  doc.on("data", buffers.push.bind(buffers));
+  doc.on("end", () => { });
+  const logoPath = path.join(__dirname, "..", "assets", "paysum.jpg");
+  if (!fs.existsSync(logoPath)) {
+    throw new Error("Logo file not found");
+  }
 
+  doc.image(logoPath, 50, 45, { width: 100, height: 50 });
+
+  doc.fontSize(18).text("PAYSUM", 50, 100, { align: "right" });
+  doc
+    .fontSize(10)
+    .text("GENESYS TECHHUB,ENUGU,NIGERIA", 50, 120, { align: "right" });
+  doc.moveDown(2);
   // Title
-  doc.fontSize(18).text('Payroll Summary', { align: 'center' });
+  doc.fontSize(18).text("Payroll Summary", { align: "center" });
   doc.moveDown();
+  const table = {
+    headers: [
+      "ID",
+      "EmployeeID",
+      "GrossPay",
+      "Tax",
+      "Pension",
+      "NHIS",
+      "Commission",
+      "NetPay",
+    ], rows: payrolls.map((p: any) => [
+      p.id.toString(),
+      p.employeeId?.toString() || "N/A",
+      p.grossPay.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 }),
+      p.tax.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 }),
+      p.pension.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 }),
+      p.nhis.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 }),
+      (p.commission || 0).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 }),
+      p.netPay.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 }),
+    ]),
+  };
+  console.log("doc.table exists:", typeof doc.table); // Check if table function exists
 
-  // Header row
-  doc.fontSize(12).text('ID | EmployeeID | GrossPay | Tax | Pension | NHIS | Commission | NetPay', { underline: true });
-  doc.moveDown();
-
-  payrolls.forEach((p: any) => {
-    const line = `${p.id} | ${p.employeeId} | ${p.grossPay} | ${p.tax} | ${p.pension} | ${p.nhis} | ${p.commission || 0} | ${p.netPay}`;
-    doc.text(line);
+  await doc.table(table, {
+    prepareHeader: () => doc.font("Helvetica-Bold").fontSize(10),
+    prepareRow: () => doc.font("Helvetica").fontSize(10),
+    width: 500,
   });
+
 
   doc.end();
 
   return new Promise((resolve, reject) => {
-    doc.on('end', () => {
+    doc.on("end", () => {
       const pdfBuffer = Buffer.concat(buffers);
       resolve(pdfBuffer);
     });
-    doc.on('error', reject);
+    doc.on("error", reject);
   });
 };
-

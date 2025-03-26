@@ -14,15 +14,31 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 Object.defineProperty(exports, "__esModule", { value: true });
 const client_1 = require("./prisma/client"); // Import Prisma client
 const express_1 = __importDefault(require("express"));
+const cors_1 = __importDefault(require("cors"));
 const body_parser_1 = require("body-parser");
 const errorHandler_1 = require("./middlewares/errorHandler");
 const auth_routes_1 = __importDefault(require("./routes/auth.routes"));
+const demoroutes_1 = __importDefault(require("./routes/demoroutes"));
+const employee_routes_1 = __importDefault(require("./routes/employee.routes"));
+const payroll_routes_1 = __importDefault(require("./routes/payroll.routes"));
+const payslip_routes_1 = __importDefault(require("./routes/payslip.routes"));
 const app = (0, express_1.default)();
 const port = process.env.PORT || 3001;
 // Middlewares
 app.use((0, body_parser_1.json)());
 app.use((0, body_parser_1.urlencoded)({ extended: true }));
+app.use((0, cors_1.default)({
+    origin: "*", // Allows all origins
+    methods: 'GET, POST, PUT, DELETE, OPTIONS',
+    allowedHeaders: 'Content-Type, Authorization',
+    credentials: true, // Allow cookies and authorization headers
+}));
+app.options('*', (0, cors_1.default)()); // Handle preflight requests for all routes
 app.use('/api/auth', auth_routes_1.default);
+app.use('/api/demo', demoroutes_1.default);
+app.use('/api/employee', employee_routes_1.default);
+app.use('/api/payroll', payroll_routes_1.default);
+app.use('/api/payslip', payslip_routes_1.default);
 // Routes (to be added later)
 app.get('/', (req, res) => {
     res.send('Payroll System API');
