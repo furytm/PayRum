@@ -58,8 +58,8 @@ const generatePayrollsCSV = () => __awaiter(void 0, void 0, void 0, function* ()
         orderBy: { createdAt: "desc" },
     });
     const fields = [
-        "id",
-        "employeeId",
+        "emoloyeeId",
+        "employeeFullName",
         "grossPay",
         "tax",
         "pension",
@@ -69,8 +69,23 @@ const generatePayrollsCSV = () => __awaiter(void 0, void 0, void 0, function* ()
         "payslip",
         "createdAt",
     ];
+    const formattedPayrolls = payrolls.map((p) => {
+        var _a, _b, _c;
+        return ({
+            employeeID: ((_b = (_a = p.employee) === null || _a === void 0 ? void 0 : _a.id) === null || _b === void 0 ? void 0 : _b.toString()) || "N/A",
+            employeeFullName: ((_c = p.employee) === null || _c === void 0 ? void 0 : _c.fullName) || "N/A", // Get full name, or "N/A" if missing
+            grossPay: p.grossPay.toFixed(2),
+            tax: p.tax.toFixed(2),
+            pension: p.pension.toFixed(2),
+            nhis: p.nhis.toFixed(2),
+            commission: (p.commission || 0).toFixed(2),
+            netPay: p.netPay.toFixed(2),
+            payslip: p.payslip,
+            createdAt: p.createdAt.toISOString(),
+        });
+    });
     const json2csvParser = new json2csv_1.Parser({ fields });
-    const csv = json2csvParser.parse(payrolls);
+    const csv = json2csvParser.parse(formattedPayrolls);
     return csv;
 });
 exports.generatePayrollsCSV = generatePayrollsCSV;
@@ -99,8 +114,8 @@ const generatePayrollsPDFBuffer = () => __awaiter(void 0, void 0, void 0, functi
     doc.moveDown();
     const table = {
         headers: [
-            "ID",
             "EmployeeID",
+            "Name",
             "GrossPay",
             "Tax",
             "Pension",
@@ -108,10 +123,10 @@ const generatePayrollsPDFBuffer = () => __awaiter(void 0, void 0, void 0, functi
             "Commission",
             "NetPay",
         ], rows: payrolls.map((p) => {
-            var _a;
+            var _a, _b;
             return [
-                p.id.toString(),
                 ((_a = p.employeeId) === null || _a === void 0 ? void 0 : _a.toString()) || "N/A",
+                ((_b = p.employee) === null || _b === void 0 ? void 0 : _b.fullName) || "N/A",
                 p.grossPay.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 }),
                 p.tax.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 }),
                 p.pension.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 }),

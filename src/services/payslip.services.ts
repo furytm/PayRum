@@ -48,8 +48,8 @@ export const generatePayrollsCSV = async (): Promise<string> => {
     orderBy: { createdAt: "desc" },
   });
   const fields = [
-    "id",
-    "employeeId",
+    "emoloyeeId",
+    "employeeFullName",
     "grossPay",
     "tax",
     "pension",
@@ -59,8 +59,21 @@ export const generatePayrollsCSV = async (): Promise<string> => {
     "payslip",
     "createdAt",
   ];
+  
+    const formattedPayrolls = payrolls.map((p) => ({
+      employeeID:p.employee?.id?.toString() || "N/A",
+      employeeFullName: p.employee?.fullName || "N/A",  // Get full name, or "N/A" if missing
+      grossPay: p.grossPay.toFixed(2),
+      tax: p.tax.toFixed(2),
+      pension: p.pension.toFixed(2),
+      nhis: p.nhis.toFixed(2),
+      commission: (p.commission || 0).toFixed(2),
+      netPay: p.netPay.toFixed(2),
+      payslip: p.payslip,
+      createdAt: p.createdAt.toISOString(),
+    }));
   const json2csvParser = new Json2csvParser({ fields });
-  const csv = json2csvParser.parse(payrolls);
+  const csv = json2csvParser.parse(formattedPayrolls);
   return csv;
 };
 
@@ -93,8 +106,8 @@ export const generatePayrollsPDFBuffer = async (): Promise<Buffer> => {
   doc.moveDown();
   const table = {
     headers: [
-      "ID",
       "EmployeeID",
+      "Name",
       "GrossPay",
       "Tax",
       "Pension",
@@ -102,8 +115,8 @@ export const generatePayrollsPDFBuffer = async (): Promise<Buffer> => {
       "Commission",
       "NetPay",
     ], rows: payrolls.map((p: any) => [
-      p.id.toString(),
       p.employeeId?.toString() || "N/A",
+      p.employee?.fullName || "N/A",
       p.grossPay.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 }),
       p.tax.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 }),
       p.pension.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 }),
