@@ -20,13 +20,13 @@ export const createPayroll = async (employeeId: number) => {
   const commissionRate = 2; // 2%
 
   // Calculate deductions
-  const tax = (taxRate / 100) * grossPay;
-  const pension = (pensionRate / 100) * grossPay;
-  const nhis = (nhisRate / 100) * grossPay;
-  const commission = (commissionRate / 100) * grossPay;
+  const tax = Number(((taxRate / 100) * grossPay).toFixed(2));
+  const pension = Number(((pensionRate / 100) * grossPay).toFixed(2));
+  const nhis = Number(((nhisRate / 100) * grossPay).toFixed(2));
+  const commission = Number(((commissionRate / 100) * grossPay).toFixed(2));
 
-  const deductions = tax + pension + nhis;
-  const netPay = grossPay - deductions + commission;
+  const deductions = Number((tax + pension + nhis).toFixed(2));
+  const netPay = Number((grossPay - deductions + commission).toFixed(2));
 
   // Create payroll entry
   const payroll = await prisma.payroll.create({
@@ -80,7 +80,13 @@ export const getAllPayrolls = async () => {
   // Map each payroll record to add a computed "deductions" field
   const payrollsWithDeductions= payrolls.map(payroll=>({
     ...payroll,
-    deductions:payroll.tax +payroll.pension+payroll.nhis,
+    grossPay: payroll.grossPay.toFixed(2),
+    tax: payroll.tax.toFixed(2),
+    pension: payroll.pension.toFixed(2),
+    nhis: payroll.nhis.toFixed(2),
+    commission: (payroll.commission || 0).toFixed(2),
+    netPay: payroll.netPay.toFixed(2),
+    deductions:(payroll.tax +payroll.pension+payroll.nhis).toFixed(2),
     employeeFullName: payroll.employee.fullName,
   }));
   return payrollsWithDeductions;
@@ -119,4 +125,12 @@ export const getPayrollSummary = async (): Promise<PayrollSummary> => {
   
   return summary;
 };
-
+export const deletePayroll= async (id: number) => {
+  const payroll = await prisma.payroll.findUnique({ where: { id } });
+  if (!payroll) {
+    throw new Error('Payroll not found');
+  }
+  return await prisma.payroll.delete({
+    where: { id },
+  });
+};

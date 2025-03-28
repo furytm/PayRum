@@ -5,6 +5,7 @@ import {
   getPayrollsForEmployee,
   getAllPayrollRecords,
   getPayrollSummaryController,
+  deletePayrollController,
 } from '../controllers/payroll.controller';
 import { verifyAdmin } from '../middlewares/authMiddleware';
 
@@ -20,5 +21,6 @@ router.get('/employee/:employeeId', verifyAdmin, getPayrollsForEmployee);
 router.get('/', verifyAdmin, getAllPayrollRecords);
 router.get('/:id', verifyAdmin, getPayrollRecordById);
 router.post('/', verifyAdmin, addPayroll);
+router.delete('/:id',verifyAdmin, deletePayrollController);
 
 export default router;

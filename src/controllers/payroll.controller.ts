@@ -4,7 +4,8 @@ import {
   getPayrollById,
   getPayrollsByEmployee,
   getAllPayrolls,
-  getPayrollSummary
+  getPayrollSummary,
+  deletePayroll
 } from '../services/payroll.service';
 
 export const addPayroll = async (req: Request, res: Response, next: NextFunction) => {
@@ -54,3 +55,15 @@ export const getPayrollSummaryController = async (req: Request, res: Response, n
     next(error);
   }
 };
+export const deletePayrollController= async(req:Request, res: Response, next: NextFunction)=>{
+try {
+  const {id}= req.params;
+  await deletePayroll(Number(id))
+  res.status(200).json({
+    message: "Payroll Deleted Successfully"
+  })
+} catch (error) {
+  next(error)
+}
+
+}
