@@ -1,5 +1,7 @@
 import { prisma } from '../prisma/client';
 import { v4 as uuidv4 } from 'uuid';
+import { parse } from 'csv-parse';
+
 
 export interface EmployeeInput {
   fullName: string;
@@ -16,8 +18,14 @@ export interface EmployeeInput {
 interface EmployeesReturn extends EmployeeInput {
   autoId: string;
 }
-export const createEmployee = async (employeeData: EmployeeInput | EmployeeInput[]): Promise<EmployeesReturn[]> => {
-  // Ensure employeeData is always an array
+// Overload signatures
+export function createEmployee(employeeData: EmployeeInput): Promise<EmployeesReturn[]>;
+export function createEmployee(employeeData: EmployeeInput[]): Promise<EmployeesReturn[]>;
+
+// Implementation
+export async function createEmployee(
+  employeeData: EmployeeInput | EmployeeInput[]
+): Promise<EmployeesReturn[]> {
   const employees = Array.isArray(employeeData) ? employeeData : [employeeData];
 
   if (!employees.length) throw new Error("No employee data provided.");
@@ -33,7 +41,9 @@ export const createEmployee = async (employeeData: EmployeeInput | EmployeeInput
   const existingEmailsSet = new Set(existingEmployees.map((e) => e.email));
 
   // Filter new employees to avoid duplicates
-  const newEmployees = employees.filter(employee => !existingEmailsSet.has(employee.email));
+  const newEmployees = employees.filter(
+    (employee) => !existingEmailsSet.has(employee.email)
+  );
 
   if (!newEmployees.length) {
     throw new Error("All provided employees already exist in the database.");
@@ -45,6 +55,8 @@ export const createEmployee = async (employeeData: EmployeeInput | EmployeeInput
     const newEmployee = await prisma.employee.create({
       data: {
         ...employee,
+        // Ensure grossPay is a number (if coming from CSV, it might be a string)
+        grossPay: Number(employee.grossPay),
         autoId: uuidv4().slice(0, 8),
       },
     });
@@ -52,8 +64,7 @@ export const createEmployee = async (employeeData: EmployeeInput | EmployeeInput
   }
 
   return createdEmployees;
-};
-
+}
 
 
 
@@ -103,5 +114,15 @@ export const updateEmployee = async (id: number, updateData: Partial<EmployeeInp
     }
     return await prisma.employee.delete({
       where: { id },
+    });
+  };
+
+  export const parseEmployeeCSV = (csvContent: string): Promise<EmployeeInput[]> => {
+    return new Promise((resolve, reject) => {
+      parse(csvContent, { columns: true, trim: true }, (err, records: EmployeeInput[]) => {
+        if (err) return reject(err);
+        // Optionally, add additional validation or transformation here.
+        resolve(records);
+      });
     });
   };

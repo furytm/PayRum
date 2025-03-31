@@ -1,12 +1,16 @@
 import { Router } from 'express';
+import { upload } from '../middlewares/upload.middleware';
 import {
   createEmployeeController,
   updateEmployeeController,
   getAllEmployeesController,
   getEmployeeByIdController,
   deleteEmployeeController,
+  importEmployeesController
 } from '../controllers/employee.controller';
 import { verifyToken } from '../middlewares/authMiddleware'; // Ensure JWT middleware is implemented
+import { verifyAdmin } from '../middlewares/authMiddleware';
+
 
 const router = Router();
 
@@ -27,5 +31,9 @@ router.patch('/:id', updateEmployeeController);
 
 // Delete employee
 router.delete('/:id', deleteEmployeeController);
+
+// Endpoint to import employees via CSV
+router.post('/import', verifyAdmin, upload.single('file'), importEmployeesController);
+
 
 export default router;
