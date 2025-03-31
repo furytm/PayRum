@@ -1,5 +1,5 @@
 import { Request, Response, NextFunction } from 'express';
-import { generatePayrollsCSV, generatePayrollsPDFBuffer, getPayslip } from '../services/payslip.services';
+import { generatePayrollsCSV, generatePayrollsPDFBuffer, getPayslip, exportPayslipPDF, exportPayslipCSV } from '../services/payslip.services';
 
 export const getPayslipController = async (req: Request, res: Response, next: NextFunction) => {
   try {
@@ -11,6 +11,39 @@ export const getPayslipController = async (req: Request, res: Response, next: Ne
   }
 };
 
+
+export const getPayslipPDFController = async (
+  req: Request,
+  res: Response,
+  next: NextFunction
+): Promise<void> => {
+  try {
+    const { payrollId } = req.params;
+    const pdfBuffer = await exportPayslipPDF(Number(payrollId));
+    res.setHeader("Content-Type", "application/pdf");
+    res.setHeader("Content-Disposition", "attachment; filename=payslip.pdf");
+    res.send(pdfBuffer);
+  } catch (error) {
+    next(error);
+  }
+};
+
+
+export const getPayslipCSVController = async (
+  req: Request,
+  res: Response,
+  next: NextFunction
+): Promise<void> => {
+  try {
+    const { payrollId } = req.params;
+    const csv = await exportPayslipCSV(Number(payrollId));
+    res.setHeader("Content-Type", "text/csv");
+    res.setHeader("Content-Disposition", "attachment; filename=payslip.csv");
+    res.send(csv);
+  } catch (error) {
+    next(error);
+  }
+};
 
 // CSV Export Controller
 export const exportPayrollsCSV = async (req: Request, res: Response, next: NextFunction) => {
