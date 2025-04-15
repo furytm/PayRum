@@ -4,7 +4,9 @@ import { signup,verifyOTPAndCreateToken,login } from '../services/admin.service'
 // Admin Signup Route
 export const adminSignup = async (req: Request, res: Response, next: NextFunction) => {
   const { email, password } = req.body;
-
+if (!email || !password){
+  throw new Error("Invalid Credentials")
+}
   try {
     // Call service method to handle signup logic
     const otp = await signup(email, password);

@@ -9,55 +9,6 @@ import {
 import { parseEmployeeCSV } from '../services/employee.service';
 import { EmployeeInput } from "../services/employee.service";
 
-// export const createEmployeeController = async (
-//   req: Request<EmployeeInput[]>,
-//   res: Response,
-//   next: NextFunction
-// ): Promise<void> => {
-// // If the request body is not an array, wrap it in an array
-// const employees: EmployeeInput[] = Array.isArray(req.body) ? req.body : [req.body];
-//   for (const employee of employees) {
-//     const {
-//       fullName,
-//       email,
-//       accountNumber,
-//       HireDate,
-//       grossPay,
-//       department,
-//       employmentType,
-//       jobTitle,
-//       bankName,
-//     } = employee;
-
-//     // Basic validation
-//     if (
-//       !fullName ||
-//       !email ||
-//       !accountNumber ||
-//       !HireDate ||
-//       !department ||
-//       !grossPay ||
-//       !employmentType ||
-//       !jobTitle ||
-//       !bankName
-//     ) {
-//       res.status(400).json({ message: "All fields are required" });
-//       return;
-//     }
-//   }
-
-//   try {
-//     const newEmployees = await createEmployee(employees);
-//     res.status(201).json({
-//       message: "Employee created successfully",
-//       data: newEmployees,
-    
-//     });
-//     console.log(newEmployees)
-//   } catch (error) {
-//     next(error);
-//   }
-// };
 
 // Helper function to validate employee data
 const isValidEmployee = (employee: EmployeeInput): boolean => {

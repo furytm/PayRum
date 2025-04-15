@@ -45,6 +45,11 @@ app.use('/api/payslip',payslipRoutes)
 app.get('/', (req, res) => {
   res.send('Payroll System API');
 });
+app.get('/api/ping', (req, res) => {
+  console.log(`[PING] Server is alive at ${new Date().toISOString()}`);
+  res.status(200).json({ message: 'pong' });
+});
+
 
 // Error Handler Middleware (must be at the end)
 app.use((err: any, req: Request, res: Response, next: NextFunction) => {
