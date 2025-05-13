@@ -1,72 +1,62 @@
-// This is your Prisma schema file,
-// learn more about it in the docs: https://pris.ly/d/prisma-schema
-
-// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
-// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
-
-
-
-// prisma/schema.prisma
+generator client {
+  provider = "prisma-client-js"
+}
 
 datasource db {
   provider = "postgresql"
   url      = env("DATABASE_URL")
 }
 
-generator client {
-  provider = "prisma-client-js"
-}
-
-
 model Admin {
-  id         Int      @id @default(autoincrement())
-  email      String   @unique
-  password   String
-  otp       String? 
-  createdAt  DateTime @default(now())
-  updatedAt  DateTime @updatedAt
+  id        Int      @id @default(autoincrement())
+  email     String   @unique
+  password  String
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  otp       String?
 }
+
 model Employee {
-  id             Int      @id @default(autoincrement())
-  fullName       String
-  email          String   @unique
+  id             Int       @id @default(autoincrement())
+  email          String    @unique
+  autoId         String    @unique
+  createdAt      DateTime  @default(now())
+  updatedAt      DateTime  @updatedAt
   accountNumber  String
-   HireDate        String
+  bankName       String
   department     String
   employmentType String
-  grossPay        Float
+  fullName       String
   jobTitle       String
-  bankName       String
-  autoId         String   @unique  // Auto-generated login ID for employees
-  payrolls       Payroll[]             // One-to-many relationship to Payroll
-  createdAt      DateTime @default(now())
-  updatedAt      DateTime @updatedAt
+  HireDate       String
+  grossPay       Float
+  payrolls       Payroll[]
 }
 
 model Payroll {
-  id           Int      @id @default(autoincrement())
-  employeeId   Int
-  employee     Employee @relation(fields: [employeeId], references: [id]) // Many-to-one relationship with Employee
-  grossPay     Float
-  tax          Float
-  pension      Float
-  nhis         Float
-  commission   Float?   // Optional commission field if applicable
-  netPay       Float    // Calculated as: grossPay - (tax + pension + nhis) + commission (if any)
-  payslip      String?  // Detailed breakdown stored as JSON or formatted text
-  createdAt    DateTime @default(now())
-  updatedAt    DateTime @updatedAt
-}
-model RequestDemo {
-  id               String  @id @default(uuid())
-  firstName        String
-  lastName         String
-  workEmail        String  @unique
-  companyName      String
-  phoneNumber      String
-  companyRole      String
-  employeeHeadcount Int
-  preferredContact Boolean // true for Phone, false for Email
-  createdAt        DateTime @default(now())
+  id         Int      @id @default(autoincrement())
+  employeeId Int
+  grossPay   Float
+  tax        Float
+  pension    Float
+  nhis       Float
+  commission Float?
+  netPay     Float
+  payslip    String?
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+  employee   Employee @relation(fields: [employeeId], references: [id])
 }
 
+model RequestDemo {
+  id                String   @id @default(uuid())
+  firstName         String
+  lastName          String
+  workEmail         String   @unique
+  companyName       String
+  phoneNumber       String
+  companyRole       String
+  employeeHeadcount Int
+  preferredContact  Boolean
+  createdAt         DateTime @default(now())
+}

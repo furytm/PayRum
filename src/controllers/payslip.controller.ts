@@ -1,5 +1,20 @@
 import { Request, Response, NextFunction } from 'express';
-import { generatePayrollsCSV, generatePayrollsPDFBuffer, getPayslip, exportPayslipPDF, exportPayslipCSV } from '../services/payslip.services';
+import { generatePayrollsCSV, generatePayrollsPDFBuffer, getPayslip, exportPayslipPDF, exportPayslipCSV, getAllPayslips } from '../services/payslip.services';
+
+
+export const getAllPayslipsController = async (
+  req: Request,
+  res: Response,
+  next: NextFunction
+) => {
+  try {
+    const payslips = await getAllPayslips();
+    res.status(200).json({ success: true, payslips });
+  } catch (error) {
+    next(error);
+  }
+};
+
 
 export const getPayslipController = async (req: Request, res: Response, next: NextFunction) => {
   try {

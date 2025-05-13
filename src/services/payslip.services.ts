@@ -8,6 +8,21 @@ import path from "path";
 import { height } from "pdfkit/js/page";
 // import "pdfkit-table";
 
+export const getAllPayslips = async () => {
+  const payrolls = await prisma.payroll.findMany({
+    include: { employee: true },
+    orderBy: { createdAt: 'desc' },
+  });
+
+  const payslipSummaries = payrolls.map((payroll) => ({
+    fullName: payroll.employee.fullName,
+    netPay: Number(payroll.netPay).toFixed(2),
+    status: 'Pending', // Placeholder, can be updated later
+    action: 'View',     // Placeholder, can be updated later
+  }));
+
+  return payslipSummaries;
+};
 export const getPayslip = async (payrollId: number) => {
   // Fetch payroll details with related employee
   const payroll = await prisma.payroll.findUnique({
