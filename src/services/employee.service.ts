@@ -1,6 +1,7 @@
 import { prisma } from '../prisma/client';
 import { v4 as uuidv4 } from 'uuid';
 import { parse } from 'csv-parse';
+import { AppError } from '../utils/AppError';
 
 
 export interface EmployeeInput {
@@ -46,7 +47,7 @@ export async function createEmployee(
   );
 
   if (!newEmployees.length) {
-    throw new Error("All provided employees already exist in the database.");
+    throw new AppError("All provided employees already exist in the database.",409,'Already_exists');
   }
 
   // Insert employees one by one to return their IDs
@@ -73,7 +74,7 @@ export const updateEmployee = async (id: number, updateData: Partial<EmployeeInp
       where: { id },
     });
     if (!employee) {
-      throw new Error('Employee not found');
+      throw new AppError('Employee not found',404,'Not_found');
     }
     
     // If email is being updated, ensure uniqueness
@@ -82,7 +83,7 @@ export const updateEmployee = async (id: number, updateData: Partial<EmployeeInp
         where: { email: updateData.email },
       });
       if (existingEmployee) {
-        throw new Error('Employee with this email already exists');
+        throw new AppError('Employee with this email already exists',409,'already_exists');
       }
     }
     
@@ -101,7 +102,7 @@ export const updateEmployee = async (id: number, updateData: Partial<EmployeeInp
       where: { id },
     });
     if (!employee) {
-      throw new Error('Employee not found');
+      throw new AppError('Employee not found',404,'Not_found');
     }
     return employee;
   };
@@ -109,8 +110,8 @@ export const updateEmployee = async (id: number, updateData: Partial<EmployeeInp
   export const deleteEmployee = async (id: number) => {
     // Check if employee exists before deleting
     const employee = await prisma.employee.findUnique({ where: { id } });
-    if (!employee) {
-      throw new Error('Employee not found');
+     if (!employee) {
+      throw new AppError('Employee not found',404,'Not_found');
     }
     return await prisma.employee.delete({
       where: { id },

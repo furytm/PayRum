@@ -8,6 +8,7 @@ import {
 } from "../services/employee.service";
 import { parseEmployeeCSV } from '../services/employee.service';
 import { EmployeeInput } from "../services/employee.service";
+import { AppError } from "../utils/AppError";
 
 
 // Helper function to validate employee data
@@ -37,8 +38,7 @@ export const createEmployeeController = async (
   // Validate all employees
   for (const employee of employees) {
     if (!isValidEmployee(employee)) {
-      res.status(400).json({ message: 'All fields are required' });
-      return;
+      throw new AppError('All fields are required', 400, 'MISSING_FIELDS');
     }
   }
 
@@ -132,8 +132,7 @@ export const importEmployeesController = async (
 ): Promise<void> => {
   try {
     if (!req.file) {
-      res.status(400).json({ message: 'No file uploaded' });
-      return;
+      throw new AppError('No file uploaded', 400, 'MISSING_FILE');
     }
 
     const fileBuffer = req.file.buffer;

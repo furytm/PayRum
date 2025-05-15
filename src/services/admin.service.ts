@@ -4,6 +4,7 @@ import bcrypt from 'bcryptjs';
 import { generateOTP } from '../utils/otpGenerator';
 import { sendOTPEmail } from '../utils/emailSender';
 import jwt from 'jsonwebtoken';
+import { AppError } from '../utils/AppError';
 
 // Admin Service to handle business logic
 
@@ -14,7 +15,7 @@ export const signup = async (email: string, password: string): Promise<string> =
     });
   
     if (existingAdmin) {
-      throw new Error('Admin with this email already exists');
+      throw new AppError('Admin with this email already exists', 409, 'Email_Exists');
     }
   
     // Generate OTP
@@ -39,12 +40,12 @@ export const signup = async (email: string, password: string): Promise<string> =
     });
   
     if (!admin) {
-      throw new Error('Admin not found');
+      throw new AppError('Admin not found', 404, 'Admin_not_found');
     }
   
     // Compare OTP received with the one stored in the database
     if (otp !== admin.otp) {
-      throw new Error('Invalid OTP');
+      throw new AppError('Invalid OTP',404,'Invald_otp');
     }
   
     // OTP is valid, generate JWT token for admin
@@ -69,14 +70,13 @@ export const signup = async (email: string, password: string): Promise<string> =
       where: { email },
     });
   
-    if (!admin) {
-      throw new Error('Admin not found');
+     if (!admin) {
+      throw new AppError('Admin not found', 404, 'Admin_not_found');
     }
-  
     // Compare password with hashed password stored in the database
     const isPasswordValid = await bcrypt.compare(password, admin.password);
     if (!isPasswordValid) {
-      throw new Error('Invalid password');
+      throw new AppError('Invalid password',404);
     }
   
     // Generate JWT token for the logged-in admin

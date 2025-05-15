@@ -1,18 +1,18 @@
 import { Request, Response,NextFunction } from 'express';
 import { signup,verifyOTPAndCreateToken,login } from '../services/admin.service';
+import { AppError } from '../utils/AppError';
 
 // Admin Signup Route
 export const adminSignup = async (req: Request, res: Response, next: NextFunction) => {
   const { email, password } = req.body;
 if (!email || !password){
-  throw new Error("Invalid Credentials")
+  throw new AppError("Invalid Credentials", 401,'INVALID_CREDENTIALS')
 }
   try {
     // Call service method to handle signup logic
     const otp = await signup(email, password);
     res.status(200).json({
       message: 'OTP sent to email. Please check your inbox.',
-      otp, // You might not want to return OTP directly in a real-world scenario
     });
   } catch (error) {
     next(error); 
@@ -20,8 +20,11 @@ if (!email || !password){
 };
 // Admin Login Route
 export const adminLogin = async (req: Request, res: Response, next: NextFunction) => {
-    const { email, password } = req.body;
-  
+   
+   const { email, password } = req.body;
+   if (!email || !password){
+  throw new AppError("Email and password are required", 400, 'BAD_REQUEST');
+}
     try {
       // Call service method to handle login logic
       const token = await login(email, password);
@@ -37,7 +40,9 @@ export const adminLogin = async (req: Request, res: Response, next: NextFunction
 // OTP Verification Route
 export const verifyOTP = async (req: Request, res: Response, next: NextFunction) => {
   const { email, otp } = req.body;
-
+if (!email || !otp){
+  throw new AppError("Invalid Credentials", 401,'INVALID_CREDENTIALS')
+}
   try {
     // Call service method to handle OTP verification and JWT generation
     const token = await verifyOTPAndCreateToken(email, otp);

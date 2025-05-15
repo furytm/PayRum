@@ -1,10 +1,13 @@
 // import PDFDocument from "pdfkit";
 const PDFDocument = require("pdfkit-table");
-
+import { AppError } from '../utils/AppError';
 import { prisma } from "../prisma/client";
 import { Parser as Json2csvParser } from "json2csv";
 import fs from "fs";
 import path from "path";
+import nodemailer from 'nodemailer';
+
+
 import { height } from "pdfkit/js/page";
 // import "pdfkit-table";
 
@@ -31,8 +34,8 @@ export const getPayslip = async (payrollId: number) => {
   });
 
   if (!payroll) {
-    throw new Error("Payroll record not found");
-  }
+      throw new AppError('Payroll record not found',404,'Not_found');
+    }
 
   // Format payslip response
   const payslip = {
@@ -235,7 +238,7 @@ export const generatePayrollsPDFBuffer = async (): Promise<Buffer> => {
   doc.on("end", () => { });
   const logoPath = path.join(__dirname, "..", "assets", "paysum.jpg");
   if (!fs.existsSync(logoPath)) {
-    throw new Error("Logo file not found");
+    throw new AppError("Logo file not found",404,'Not_found');
   }
 
   doc.image(logoPath, 50, 45, { width: 100, height: 50 });
@@ -288,4 +291,72 @@ export const generatePayrollsPDFBuffer = async (): Promise<Buffer> => {
     });
     doc.on("error", reject);
   });
+};
+
+
+
+export const sendPayslipById = async (payrollId: number): Promise<void> => {
+  const payroll = await prisma.payroll.findUnique({
+    where: { id: payrollId },
+    include: { employee: true },
+  });
+
+ if (!payroll) {
+  throw new AppError('Payroll not found', 404, 'PAYROLL_NOT_FOUND');
+}
+  const pdfBuffer = await exportPayslipPDF(payrollId);
+
+  const transporter = nodemailer.createTransport({
+    service: 'gmail',
+    auth: {
+      user: process.env.SMTP_USER!,
+      pass: process.env.SMTP_PASS!,
+    },
+  });
+
+  await transporter.sendMail({
+    from: `"PaySum Payroll" <${process.env.SMTP_USER}>`,
+    to: payroll.employee.email,
+    subject: 'Your Payslip',
+    text: `Dear ${payroll.employee.fullName},\n\nPlease find attached your payslip.`,
+    attachments: [
+      {
+        filename: 'payslip.pdf',
+        content: pdfBuffer,
+      },
+    ],
+  });
+};
+
+export const sendAllPayslips = async (): Promise<void> => {
+  const payrolls = await prisma.payroll.findMany({
+    include: { employee: true },
+  });
+
+  const transporter = nodemailer.createTransport({
+    service: 'gmail',
+    auth: {
+      user: process.env.SMTP_USER!,
+      pass: process.env.SMTP_PASS!,
+    },
+  });
+
+  for (const payroll of payrolls) {
+    if (!payroll.employee.email) continue;
+
+    const pdfBuffer = await exportPayslipPDF(payroll.id);
+
+    await transporter.sendMail({
+      from: `"PaySum Payroll" <${process.env.SMTP_USER}>`,
+      to: payroll.employee.email,
+      subject: 'Your Payslip',
+      text: `Dear ${payroll.employee.fullName},\n\nPlease find attached your payslip.`,
+      attachments: [
+        {
+          filename: 'payslip.pdf',
+          content: pdfBuffer,
+        },
+      ],
+    });
+  }
 };

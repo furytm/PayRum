@@ -1,62 +1,57 @@
 import { Request, Response, NextFunction } from 'express';
+import { Prisma } from '@prisma/client'; // Needed for Prisma error handling
 
 interface CustomError extends Error {
   status?: number;
-  code?: string; // A custom error code, if available
-  errors?: any;  // Optional detailed error messages
+  code?: string;
+  errors?: any;
 }
 
 const errorHandler = (
-  err: unknown, 
-  req: Request, 
-  res: Response, 
+  err: unknown,
+  req: Request,
+  res: Response,
   next: NextFunction
 ): Response => {
-  // Cast error to CustomError
   const error = err as CustomError;
 
-  // Log detailed error information for debugging
-  console.error("Error occurred:", {
-    message: error.message,
-    name: error.name,
-    stack: error.stack,
-    path: req.path,
-    method: req.method,
-    timestamp: new Date().toISOString(),
-  });
+  const env = process.env.NODE_ENV || 'development';
 
-  // Prepare a default friendly message
-  let friendlyMessage = 'Something went wrong on the server. Please try again later.';
+  // Defaults
   let statusCode = error.status || 500;
+  let message = error.message || 'Something went wrong';
   let errorCode = error.code || 'SERVER_ERROR';
-  let detailedErrors = error.errors || [];
 
-  // Specific error handling
-  if (error.name === 'ValidationError') {
-    friendlyMessage = 'Invalid input data. Please check your request.';
+  // Prisma Errors
+  if (error instanceof Prisma.PrismaClientKnownRequestError) {
     statusCode = 400;
+    errorCode = error.code;
+    message = `Prisma Error: ${error.message}`;
+  } else if (error instanceof Prisma.PrismaClientValidationError) {
+    statusCode = 400;
+    message = 'Validation error from database';
   } else if (error.name === 'JsonWebTokenError') {
-    friendlyMessage = 'Invalid token provided. Please log in again.';
     statusCode = 401;
+    message = 'Invalid token';
   } else if (error.name === 'TokenExpiredError') {
-    friendlyMessage = 'Your session has expired. Please log in again.';
     statusCode = 401;
+    message = 'Token expired';
   }
 
-  // In development, include the stack trace
-  const responsePayload: any = {
+  const responsePayload = {
     success: false,
     error: {
+      message,
       code: errorCode,
-      message: friendlyMessage,
-      timestamp: new Date().toISOString(),
+      ...(env === 'development' && {
+        stack: error.stack,
+        path: req.path,
+        method: req.method,
+      }),
     },
   };
 
-  if (process.env.NODE_ENV === 'development') {
-    responsePayload.error.details = detailedErrors;
-    responsePayload.error.stack = error.stack;
-  }
+  console.error(`[${req.method}] ${req.path} - ${message}`);
 
   return res.status(statusCode).json(responsePayload);
 };

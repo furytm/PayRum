@@ -1,4 +1,5 @@
 import { prisma } from '../prisma/client';
+import { AppError } from '../utils/AppError';
 
 export const createPayroll = async (employeeId: number) => {
   // Ensure the employee exists and retrieve grossPay
@@ -7,9 +8,9 @@ export const createPayroll = async (employeeId: number) => {
     select: { grossPay: true }  // Fetch only the grossPay field
   });
 
-  if (!employee) {
-    throw new Error('Employee not found');
-  }
+    if (!employee) {
+        throw new AppError('Employee not found',404,'Not_found');
+      }
 
   const { grossPay } = employee; // Use the employee's grossPay
 
@@ -52,17 +53,17 @@ export const getPayrollById = async (id: number) => {
     include: { employee: true }, // Optionally include employee details
   });
   if (!payroll) {
-    throw new Error('Payroll record not found');
-  }
+      throw new AppError('Payroll not found',404,'Not_found');
+    }
   return payroll;
 };
 
 export const getPayrollsByEmployee = async (employeeId: number) => {
   // Ensure the employee exists (optional, based on your business rules)
   const employee = await prisma.employee.findUnique({ where: { id: employeeId } });
-  if (!employee) {
-    throw new Error('Employee not found');
-  }
+   if (!employee) {
+      throw new AppError('Employee not found',404,'Not_found');
+    }
   
   const payrolls = await prisma.payroll.findMany({
     where: { employeeId },
@@ -128,8 +129,8 @@ export const getPayrollSummary = async (): Promise<PayrollSummary> => {
 export const deletePayroll= async (id: number) => {
   const payroll = await prisma.payroll.findUnique({ where: { id } });
   if (!payroll) {
-    throw new Error('Payroll not found');
-  }
+      throw new AppError('Payroll not found',404,'Not_found');
+    }
   return await prisma.payroll.delete({
     where: { id },
   });

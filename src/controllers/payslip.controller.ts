@@ -1,5 +1,5 @@
 import { Request, Response, NextFunction } from 'express';
-import { generatePayrollsCSV, generatePayrollsPDFBuffer, getPayslip, exportPayslipPDF, exportPayslipCSV, getAllPayslips } from '../services/payslip.services';
+import { generatePayrollsCSV, generatePayrollsPDFBuffer, getPayslip, exportPayslipPDF, exportPayslipCSV, getAllPayslips, sendPayslipById, sendAllPayslips } from '../services/payslip.services';
 
 
 export const getAllPayslipsController = async (
@@ -83,3 +83,22 @@ export const exportPayrollsPDF = async (req: Request, res: Response, next: NextF
     next(error);
   }
 };
+export const sendPayslipByIdController = async (req: Request, res: Response, next: NextFunction) => {
+  try {
+    const { id } = req.params;
+    await sendPayslipById(Number(id));
+    res.status(200).json({ message: 'Payslip sent successfully' });
+  } catch (error) {
+    next(error);
+  }
+};
+export const sendAllPayslipsController = async (req: Request, res: Response, next: NextFunction) => {
+  try {
+    await sendAllPayslips();
+    res.status(200).json({ message: 'All payslips sent successfully' });
+  } catch (error) {
+    next(error);
+  }
+};
+
+
