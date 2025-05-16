@@ -10,6 +10,8 @@ import {
 import { verifyAdmin } from '../middlewares/authMiddleware';
 import { getAllPayslipsController } from '../controllers/payslip.controller';
 
+import { deleteAllPayrollsController } from '../controllers/payroll.controller';
+
 
 const router = Router();
 router.get('/summary', verifyAdmin, getPayrollSummaryController);
@@ -21,6 +23,7 @@ router.get('/employee/:employeeId', verifyAdmin, getPayrollsForEmployee);
 // Protected routes - ensure only admin can access these endpoints
 
 router.get('/', verifyAdmin, getAllPayrollRecords);
+router.delete('/all', verifyAdmin, deleteAllPayrollsController); // Protect with admin middleware if needed
 router.get('/:id', verifyAdmin, getPayrollRecordById);
 router.post('/', verifyAdmin, addPayroll);
 router.delete('/:id',verifyAdmin, deletePayrollController);

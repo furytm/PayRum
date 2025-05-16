@@ -8,13 +8,35 @@ import {
   deletePayroll
 } from '../services/payroll.service';
 
-export const addPayroll = async (req: Request, res: Response, next: NextFunction) => {
+import { deleteAllPayrolls } from '../services/payroll.service';
+import { AppError } from '../utils/AppError';
+
+export const addPayroll = async (req: Request, res: Response, next: NextFunction):Promise<void> => {
   try {
     const { employeeId } = req.body;
+
+    if (!employeeId) {
+      throw new AppError('Employee ID is required', 400, 'MISSING_EMPLOYEE_ID');
+    }
+
+    // If you want to support future extensions with commission override, pass it from req.body here
     const payroll = await createPayroll(employeeId);
-    res.status(201).json({ success: true, payroll });
-  } catch (error: any) {
-    next(error);
+  res.status(201).json({
+      success: true,
+      message: 'Payroll created successfully',
+      payroll,
+    });
+
+  } catch (err: any) {
+    if (err.message?.includes('already exists')) {
+    res.status(409).json({
+        success: false,
+        message: err.message,
+        code: 'DUPLICATE_PAYROLL',
+      });
+    }
+
+    next(err); // Let your global error handler catch anything else
   }
 };
 
@@ -67,3 +89,21 @@ try {
 }
 
 }
+
+
+export const deleteAllPayrollsController = async (
+  req: Request,
+  res: Response,
+  next: NextFunction
+): Promise<void> => {
+  try {
+    await deleteAllPayrolls();
+    res.status(200).json({
+      message: 'All payroll records deleted successfully',
+    });
+  } catch (error) {
+    console.error("Error deleting payrolls:", error);
+    next(error);
+  }
+};
+

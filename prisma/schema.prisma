@@ -27,6 +27,7 @@ model Employee {
   department     String
   employmentType String
   fullName       String
+  status         String@default("pending")
   jobTitle       String
   HireDate       String
   grossPay       Float
@@ -43,9 +44,11 @@ model Payroll {
   commission Float?
   netPay     Float
   payslip    String?
+  payPeriod  String?  @db.VarChar(7)  // New field for the payroll month in "YYYY-MM" format
+  @@unique([employeeId, payPeriod])   // Ensure one payroll per employee per month (new payrolls)
   createdAt  DateTime @default(now())
   updatedAt  DateTime @updatedAt
-  employee   Employee @relation(fields: [employeeId], references: [id])
+ employee   Employee @relation(fields: [employeeId], references: [id], onDelete: Cascade)
 }
 
 model RequestDemo {
